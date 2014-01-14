@@ -1,0 +1,14 @@
+Package: bbscrapeR
+Title: Tools for collecting basketball data from nba.com and wnba.com
+Version: 0.1
+Author: Carson Sievert <sievert@iastate.edu>
+Maintainer: Carson Sievert <sievert@iastate.edu>
+Description: Tools for collecting basketball data from nba.com and wnba.com
+License: GPL (>=2)
+Depends:
+    R (>= 2.15.1)
+Imports:
+    XML,
+    XML2R
+Date: 2014-01-13
+BugReports: http://github.com/cpsievert/bbXML2R/issues
