@@ -27,7 +27,8 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
   tmp <- sub("nba", "00", tmp)
   leaguez <- sub("d", "20", tmp)
   if (missing(codes)) {
-    data(codes, package="bbscrapeR")
+    scrape.env <- environment()
+    data(codes, package="bbscrapeR", envir=scrape.env)
     ids <- substr(codes, 0, 2)
     codes2 <- codes[ids %in% leaguez]            #keep only codes that match league(s) of interest
     codez <- sub("^[0-9]{2}/", "", codes2)        #get rid of league code
@@ -73,9 +74,9 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     obs <- XML2Obs(files, as.equiv=TRUE)
     #have to give slightly different names otherwise names will clash
     obs <- re_name(obs, equiv = c("message//game//htm", "message//game//vtm"), 
-                   rename.as = "message//games", diff.name="home_away")
+                   rename.as = "message//games", diff.name="home_away", quiet=TRUE)
     obs <- re_name(obs, equiv = c("message//game//htm//pl", "message//game//vtm//pl"), 
-                   diff.name="home-away")
+                   diff.name="home-away", quiet=TRUE)
     obs <- add_key(obs, parent="message", quiet=TRUE)
     tables <- collapse(obs)
     master.list[["boxscore//game"]] <- tables[["message//game"]]
@@ -112,7 +113,13 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     master.list[["pbp//game"]] <- tables[["message//game"]]
     master.list[["pbp//event"]] <- tables[["message//game//event"]]
   }
-  return(master.list[-(which(sapply(master.list, is.null), arr.ind=TRUE))]) 
+  browser()
+  remove.null <- which(sapply(master.list, is.null), arr.ind=TRUE)
+  if (length(remove.null) > 0){
+    return(master.list[-remove.null]) 
+  } else {
+    return(master.list)
+  }
 }
 
 
@@ -132,7 +139,7 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
 #' codes <- getCodes()
 #' codes <- getCodes(id=c("00", "10"))
 #' #Takes awhile
-#' codes <- getCodes(init.date="09/01/2000", id=c("00", "10", "20"), offset=paste(0:1000))
+#' codes <- getCodes(init.date="09/01/2012", id=c("00", "10", "20"), offset=paste(0:500))
 #' }
 #'
 
@@ -162,7 +169,7 @@ pbpToDocs <- function(urls, quiet=FALSE){
   for (i in urls) {
     if (!quiet) cat(i, "\n")
     con <- url(i)
-    corrupt <- readLines(con)
+    corrupt <- suppressWarnings(readLines(con))
     close(con)
     #Have to check if the url is an actual xml file
     if (any(grepl("Sorry, Page Not Found", corrupt))) {

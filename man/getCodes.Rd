@@ -23,6 +23,8 @@ Obtain game codes needed to construct XML file names
 \dontrun{
 codes <- getCodes()
 codes <- getCodes(id=c("00", "10"))
+#Takes awhile
+codes <- getCodes(init.date="09/01/2012", id=c("00", "10", "20"), offset=paste(0:500))
 }
 }
 
