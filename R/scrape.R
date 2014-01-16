@@ -113,7 +113,6 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     master.list[["pbp//game"]] <- tables[["message//game"]]
     master.list[["pbp//event"]] <- tables[["message//game//event"]]
   }
-  browser()
   remove.null <- which(sapply(master.list, is.null), arr.ind=TRUE)
   if (length(remove.null) > 0){
     return(master.list[-remove.null]) 
