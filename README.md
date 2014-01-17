@@ -5,3 +5,7 @@ R package for collecting data from nba.com and wnba.com. Currently there is supp
 
 Install this package with `library(devtools); install_github('bbscrapeR', 'cpsievert')`
 
+It may also be the case that you need to install the lastest version of [XML2R](https://github.com/cpsievert/XML2R):
+
+`library(devtools); install_github('XML2R', 'cpsievert')`
+

@@ -59,33 +59,27 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     Sys.sleep(5) #time to read warning
   }
   
-  master.list <- NULL
   if (any(grepl("shotchart_all.xml", suffix))) {
     files <- paste0(prefixs, "/shotchart_all.xml")
     obs <- XML2Obs(files, as.equiv=TRUE)
-    obs <- add_key(obs, parent="message//game", quiet=TRUE)
-    tables <- collapse(obs)
-    master.list[["shotchart//game"]] <- tables[["message//game"]]
-    master.list[["shotchart//event"]] <- format.shotchart.event(tables[["message//game//event"]])
+    #as with "pbp_all.xml" files, there is no need to add_key since 'message' & 'message//game' observations occur once per file
+    tables <- setNames(collapse(obs), paste0("shotchart//", c("message", "game", "event")))
+    tables[["shotchart//event"]] <- format.shotchart.event(tables[["shotchart//event"]])
   }
   
   if (any(grepl("boxscore.xml", suffix))) {
     files <- paste0(prefixs, "/boxscore.xml")
     obs <- XML2Obs(files, as.equiv=TRUE)
-    #have to give slightly different names otherwise names will clash
-    obs <- re_name(obs, equiv = c("message//game//htm", "message//game//vtm"), 
-                   rename.as = "message//games", diff.name="home_away", quiet=TRUE)
-    obs <- re_name(obs, equiv = c("message//game//htm//pl", "message//game//vtm//pl"), 
-                   diff.name="home-away", quiet=TRUE)
-    obs <- add_key(obs, parent="message", quiet=TRUE)
-    tables <- collapse(obs)
-    master.list[["boxscore//game"]] <- tables[["message//game"]]
-    master.list[["boxscore//games"]] <- tables[["message//games"]]
-    master.list[["boxscore//officials"]] <- tables[["message//game//officials"]]
-    master.list[["boxscore//pl"]] <- tables[["message//game//pl"]]
+    obs <- add_key(obs, parent="message//game//htm", recycle="tcd", quiet=TRUE)
+    obs <- add_key(obs, parent="message//game//vtm", recycle="tcd", quiet=TRUE)
+    obs <- re_name(obs, equiv = c("message//game//htm", "message//game//vtm"),
+                   rename.as = "teams", diff.name="home_away", quiet=TRUE)
+    obs <- re_name(obs, equiv = c("message//game//htm//pl", "message//game//vtm//pl"),
+                    rename.as = "players", diff.name="home_away", quiet=TRUE)
+    table.names <- paste0("boxscore//", c("message", "game", "teams", "officials", "players"))
+    tables <- c(tables, setNames(collapse(obs), table.names))
   }
 
-  
   if (any(grepl("pbp_all.xml", suffix))) {
     files <- paste0(prefixs, "/pbp_all.xml")
     #nba files are corrupt! Need a urlsToDocs() work-around
@@ -103,25 +97,17 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     rm(nodes)
     obs <- listsToObs(l, urls=valid.urls, as.equiv=TRUE, url.map=FALSE)
     #message node is missing from names in nba obs...sigh
+    #Also, note that there is only one message and one message//game observation per file (url can serve as key)
     nms <- names(obs) 
     nms[nms %in% "game//event"] <- "message//game//event"
     nms[nms %in% "game"] <- "message//game"
     nms[nms %in% "attrs"] <- "message"
-    names(obs) <- nms
-    obs <- add_key(obs, parent="message//game", quiet=TRUE)
-    tables <- collapse(obs)
-    master.list[["pbp//game"]] <- tables[["message//game"]]
-    master.list[["pbp//event"]] <- tables[["message//game//event"]]
+    obs <- setNames(obs, nms)
+    table.names <- paste0("pbp//", c("message", "game", "event"))
+    tables <- c(tables, setNames(collapse(obs), table.names))
   }
-  remove.null <- which(sapply(master.list, is.null), arr.ind=TRUE)
-  if (length(remove.null) > 0){
-    return(master.list[-remove.null]) 
-  } else {
-    return(master.list)
-  }
+  return(tables)
 }
-
-
 
 
 #' Obtain game codes needed to construct XML file names
