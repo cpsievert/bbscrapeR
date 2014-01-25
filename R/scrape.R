@@ -63,7 +63,7 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     files <- paste0(prefixs, "/shotchart_all.xml")
     obs <- XML2Obs(files, as.equiv=TRUE)
     #as with "pbp_all.xml" files, there is no need to add_key since 'message' & 'message//game' observations occur once per file
-    tables <- setNames(collapse(obs), paste0("shotchart//", c("message", "game", "event")))
+    tables <- setNames(collapse_obs(obs), paste0("shotchart//", c("message", "game", "event")))
     tables[["shotchart//event"]] <- format.shotchart.event(tables[["shotchart//event"]])
   }
   
@@ -77,7 +77,7 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     obs <- re_name(obs, equiv = c("message//game//htm//pl", "message//game//vtm//pl"),
                     rename.as = "players", diff.name="home_away", quiet=TRUE)
     table.names <- paste0("boxscore//", c("message", "game", "teams", "officials", "players"))
-    tables <- c(tables, setNames(collapse(obs), table.names))
+    tables <- c(tables, setNames(collapse_obs(obs), table.names))
   }
 
   if (any(grepl("pbp_all.xml", suffix))) {
@@ -104,7 +104,7 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     nms[nms %in% "attrs"] <- "message"
     obs <- setNames(obs, nms)
     table.names <- paste0("pbp//", c("message", "game", "event"))
-    tables <- c(tables, setNames(collapse(obs), table.names))
+    tables <- c(tables, setNames(collapse_obs(obs), table.names))
   }
   return(tables)
 }
