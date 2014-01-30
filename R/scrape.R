@@ -76,7 +76,7 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
                    rename.as = "teams", diff.name="home_away", quiet=TRUE)
     obs <- re_name(obs, equiv = c("message//game//htm//pl", "message//game//vtm//pl"),
                     rename.as = "players", diff.name="home_away", quiet=TRUE)
-    table.names <- paste0("boxscore//", c("message", "game", "teams", "officials", "players"))
+    table.names <- paste0("boxscore//", c("message", "game", "officials", "players", "teams"))
     tables <- c(tables, setNames(collapse_obs(obs), table.names))
   }
 
