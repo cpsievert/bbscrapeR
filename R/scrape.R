@@ -8,6 +8,7 @@
 #' @param suffix character vector with suffix of the XML files to be parsed. Currently supported options are: 'boxscore.xml', 'pbp_all.xml', 'shotchart_all.xml'
 #' @import XML
 #' @import XML2R
+#' @import dplyr
 #' @export
 #' @examples
 #' 
@@ -64,7 +65,7 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     obs <- XML2Obs(files, as.equiv=TRUE)
     #as with "pbp_all.xml" files, there is no need to add_key since 'message' & 'message//game' observations occur once per file
     tables <- setNames(collapse_obs(obs), paste0("shotchart//", c("message", "game", "event")))
-    tables[["shotchart//event"]] <- format.shotchart.event(tables[["shotchart//event"]])
+    tables[["shotchart//event"]] <- format.table(tables[["shotchart//event"]], "shotchart_event")
   }
   
   if (any(grepl("boxscore.xml", suffix))) {
@@ -122,18 +123,35 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     desc <- sub("^\\[[A-Z]{3}.*\\]", "", desc)
     #trim
     desc <- sub("^ ", "", desc)
+    
     player_code <- tables[["pbp//event"]][,"player_code"]
     #If player_code is populated and the description is not a jump ball, 
     #then the first word in the description is useless!
     idx <- player_code != "" & !grepl("Jump Ball", desc)
-    desc[idx] <- sub("^[A-Za-z]+ ", "", desc[idx])
+    desc[idx] <- sub("/^[a-z ,.'-]+$/i", "", desc[idx])
+    
+    #Now split the description into two parts if more than one player is involved
     expr <- "Assist|Steal"
     indicies <- grep(expr, desc)
     mat <- sapply(strsplit(desc[indicies], expr), "[")
     desc[indicies] <- sub(" $", "", mat[1,])
     new <- rep("", length(desc))
     new[indicies] <- sub("^: |^:", "", mat[2,])
-    tables[["pbp//event"]] <- cbind(tables[["pbp//event"]], cbind(event=desc, secondary_event=new))
+    
+    #extract the number of (cumulative) points  
+    pts <- str_extract(desc, "\\([[:digit:]]+ PTS\\)")
+    pts <- as.integer(str_extract(pts, "([[:digit:]]+)"))
+    tables[["pbp//event"]] <- cbind(tables[["pbp//event"]], 
+                                    cbind(event=desc, secondary_event=new, cum_points=pts,
+                                          three_point=as.numeric(grepl("3pt", desc))))
+    
+    #turn the numbered action_type and msg_type variables into more informative response values
+    scrape.env <- environment() #avoids bringing data objects into global environment
+    data(actions, package="bbscrapeR", envir=scrape.env)
+    data(msgs, package="bbscrapeR", envir=scrape.env)
+    tables[["pbp//event"]] <- format.table(tables[["pbp//event"]], name="pbp_event")
+    tables[["pbp//event"]] <- inner_join(x=tables[["pbp//event"]], y=actions, by=c("action_type", "msg_type"))
+    tables[["pbp//event"]] <- inner_join(x=tables[["pbp//event"]], y=msgs, by="action_type")
   }
   return(tables)
 }
@@ -202,15 +220,27 @@ pbpToDocs <- function(urls, quiet=FALSE){
   return(docs)
 }
 
-
-# Series of formatting functions to coerce variables to their proper (numeric) types
-format.table <- function(dat, nums) {
+# Take a matrix and turn into data frame and turn relevant columns into numerics (or integers)
+format.table <- function(dat, name) {
+  nums <- NULL
+  ints <- NULL
+  switch(name,
+         shotchart_event = nums <- c("x", "y"),
+         pbp_event = ints <- c("action_type", "msg_type", "eventid", "prd", "htms", "vtms")
+  )
   dat <- data.frame(dat, stringsAsFactors=FALSE)
   numz <- nums[nums %in% names(dat)] #error handling (just in case one of the columns doesn't exist)
+  intz <- ints[ints %in% names(dat)] #error handling (just in case one of the columns doesn't exist)
   for (i in numz) dat[, i] <- as.numeric(dat[, i])
+  for (i in intz) dat[, i] <- as.integer(dat[, i])
   return(dat)
 }
-format.shotchart.event <- function(dat) {
-  event.nums <- c("x", "y")
-  format.table(dat, nums=event.nums)
+
+#silly function to work around stringsAsFactors=TRUE when using merge
+merged <- function(x, y, by){
+  dat <- merge(x=x, y=y, by=by, sort=FALSE)
+  dat[] <- lapply(dat, function(x) as.character(x))
+  return(dat)
 }
+
+
