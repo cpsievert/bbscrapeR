@@ -77,7 +77,11 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     obs <- re_name(obs, equiv = c("message//game//htm//pl", "message//game//vtm//pl"),
                     rename.as = "players", diff.name="home_away", quiet=TRUE)
     table.names <- paste0("boxscore//", c("message", "game", "officials", "players", "teams"))
-    tables <- c(tables, setNames(collapse_obs(obs), table.names))
+    if (exists("tables")){
+      tables <- c(tables, setNames(collapse_obs(obs), table.names))
+    } else {
+      tables <- setNames(collapse_obs(obs), table.names)
+    }
   }
 
   if (any(grepl("pbp_all.xml", suffix))) {
@@ -99,12 +103,37 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     #message node is missing from names in nba obs...sigh
     #Also, note that there is only one message and one message//game observation per file (url can serve as key)
     nms <- names(obs) 
-    nms[nms %in% "game//event"] <- "message//game//event"
-    nms[nms %in% "game"] <- "message//game"
-    nms[nms %in% "attrs"] <- "message"
+    nms[nms %in% "game//event"] <- "pbp//event"
+    nms[nms %in% "game"] <- "pbp//game"
+    nms[nms %in% "attrs"] <- "pbp//message"
     obs <- setNames(obs, nms)
-    table.names <- paste0("pbp//", c("message", "game", "event"))
-    tables <- c(tables, setNames(collapse_obs(obs), table.names))
+    if (exists("tables")){
+      tables <- c(tables, collapse_obs(obs))
+    } else {
+      tables <- collapse_obs(obs)
+    }
+    #transform descriptions in the XML value into nicely formatted variables
+    desc <- tables[["pbp//event"]][,"XML_value"]
+    #strip game clock (this is recorded in game_clock anyway)
+    desc <- sub("^\\([0-9]{2}:[0-9]{2}\\)", "", desc)
+    #some game clocks go to the tenth (or maybe hundreth?) of a second
+    desc <- sub("^\\([0-9]{2}:[0-9]{2}\\.[0-9]+\\)", "", desc)
+    #team abbreviation isn't useful either
+    desc <- sub("^\\[[A-Z]{3}.*\\]", "", desc)
+    #trim
+    desc <- sub("^ ", "", desc)
+    player_code <- tables[["pbp//event"]][,"player_code"]
+    #If player_code is populated and the description is not a jump ball, 
+    #then the first word in the description is useless!
+    idx <- player_code != "" & !grepl("Jump Ball", desc)
+    desc[idx] <- sub("^[A-Za-z]+ ", "", desc[idx])
+    expr <- "Assist|Steal"
+    indicies <- grep(expr, desc)
+    mat <- sapply(strsplit(desc[indicies], expr), "[")
+    desc[indicies] <- sub(" $", "", mat[1,])
+    new <- rep("", length(desc))
+    new[indicies] <- sub("^: |^:", "", mat[2,])
+    tables[["pbp//event"]] <- cbind(tables[["pbp//event"]], cbind(event=desc, secondary_event=new))
   }
   return(tables)
 }
