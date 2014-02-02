@@ -23,13 +23,21 @@
 #' @examples
 #' 
 #' \dontrun{
-#' #collect and store available data between May 26th and June 1st of 2013
+#' #If collecting data in bulk, one should create a database connection first.
 #' library(dplyr)
-#' db <- src_sqlite("bball.sqlite3") #creates database in current directory
+#' db <- src_sqlite("bball.sqlite3", create=TRUE)
+#' #specify the leagues/files of interest
 #' all.leagues <- c("nba", "wnba", "d")
 #' files <- c("boxscore.xml", "pbp_all.xml", "shotchart_all.xml")
+#' #Now 'rebound' data off the web and store in your local database!
+#' rebound(first="20130526", last="20130601",
+#'         leagues = all.leagues, suffix = files, connect=db$con)
+#'                
+#'                
+#' Alternatively, one can 'rebound' data off the web and leave it in working memory
 #' dat <- rebound(first="20130526", last="20130601",
-#'                leagues = all.leagues, suffix = files, connect=db$con)
+#'                leagues = all.leagues, suffix = files)
+#' 
 #'}
 
 
@@ -160,17 +168,47 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     idx <- player_code != "" & !grepl("Jump Ball", desc)
     desc[idx] <- sub("/^[a-z ,.'-]+$/i", "", desc[idx])
     #Now split the description into two parts if more than one player is involved
-    expr <- "Assist|Steal"
+    expr <- "Assist|Steal|Block"
     indicies <- grep(expr, desc)
     mat <- sapply(strsplit(desc[indicies], expr), "[")
     desc[indicies] <- sub(" $", "", mat[1,])
     new <- rep("", length(desc))
     new[indicies] <- sub("^: |^:", "", mat[2,])
+    #split 'secondary events' further into 'who done it' and 'what was it'
+    event2 <- sub("\\)", "", sub("[0-9]+", "", sub(".*\\(", "", new)))
+    player2 <- sub("\\(.*\\)", "", new)
     #extract the number of (cumulative) points  
     pts <- str_extract(desc, "\\([[:digit:]]+ PTS\\)")
-    pts <- as.integer(str_extract(pts, "([[:digit:]]+)"))
+    pts <- str_extract(pts, "([[:digit:]]+)")
+    #add an 'event_tag'
+    tag <- rep("", length(desc))
+    indicies <- grep("\\(", desc)
+    tag[indicies] <- sub("\\)", "", sub(".*\\(", "", desc[indicies]))
+    #get rid of tag from description
+    desc <- sub(" $", "", sub("\\([0-9]+ [A-Z]+\\)$", "", desc))
+    #grab second tag (are these just personal foul trackers?)
+    tag2 <- rep("", length(desc))
+    indicies <- grep("\\([0-9]+ [A-Z]+\\)", desc)
+    tag2[indicies] <- sub("\\)", "", sub(".*\\(", "", desc[indicies]))
+    event_tag <- paste(tag2, tag)
+    #get rid of (second) tag from description
+    desc <- sub(" $", "", sub("\\([0-9]+ [A-Z]+\\)$", "", desc))
+    #grab rebounds
+    indicies <- grep("\\(Off:[0-9]+ Def:[0-9]+\\)", desc)
+    rebounds <- sub("\\)", "", sub(".*\\(", "", desc[indicies]))
+    mat <- sapply(strsplit(rebounds, "[D-d]ef"), "[")
+    rebound_off <- sub("^ ", "", sub(" $", "", sub(":", "", sub("[O-o]ff", "", mat[2,]))))
+    rebound_def <- sub("^ ", "", sub(" $", "", sub(":", "", mat[2,])))
+    #remove rebounds from description
+    desc <- sub(" $", "", sub("\\(Off:[0-9]+ Def:[0-9]+\\)", "", desc))
+    desc <- sub(":$", "", desc)
+    indicies <- grep(":", desc)
+    mat <- sapply(strsplit(desc[indicies], ":"), "[")
+    desc[indicies] <- sub(" $", "", mat[1,])
+    event_res <- rep("", length(desc))
+    event_res[indicies] <- sub("^ ", "", mat[2,])
     tables[["pbp_event"]] <- cbind(tables[["pbp_event"]], 
-                                    cbind(event=desc, secondary_event=new, cum_points=pts,
+                                    cbind(event_desc=desc, event_res, event_tag, event2, player2, cum_points=pts,
                                           three_point=as.numeric(grepl("3pt", desc))))
     #turn matrices into dfs and format variable types
     for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
@@ -178,8 +216,8 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     scrape.env <- environment() #avoids bringing data objects into global environment
     data(actions, package="bbscrapeR", envir=scrape.env)
     data(msgs, package="bbscrapeR", envir=scrape.env)
-    tables[["pbp_event"]] <- inner_join(x=tables[["pbp_event"]], y=actions, by=c("action_type", "msg_type"))
-    tables[["pbp_event"]] <- inner_join(x=tables[["pbp_event"]], y=msgs, by="action_type")
+    tables[["pbp_event"]] <- left_join(x=tables[["pbp_event"]], y=actions, by=c("action_type", "msg_type"))
+    tables[["pbp_event"]] <- left_join(x=tables[["pbp_event"]], y=msgs, by="action_type")
     if (!missing(connect)) {
       #Try to write tables to database, if that fails, write to csv. Then clear up memory
       for (i in names(tables)) export(connect, name=i, value=tables[[i]])
@@ -316,7 +354,7 @@ format.table <- function(dat, name) {
   ints <- NULL
   switch(name,
          shotchart_event = ints <- c("act", "id", "prd", "pts", "x", "y", "time"),
-         pbp_event = ints <- c("action_type", "msg_type", "eventid", "prd", "htms", "vtms")
+         pbp_event = ints <- c("action_type", "msg_type", "eventid", "prd", "htms", "vtms", "cum_points", "three_point")
   )
   dat <- data.frame(dat, stringsAsFactors=FALSE)
   numz <- nums[nums %in% names(dat)] #error handling (just in case one of the columns doesn't exist)

@@ -44,13 +44,21 @@ file types. Here are some examples:
 }
 \examples{
 \dontrun{
-#collect and store available data between May 26th and June 1st of 2013
+#If collecting data in bulk, one should create a database connection first.
 library(dplyr)
-db <- src_sqlite("bball.sqlite3") #creates database in current directory
+db <- src_sqlite("bball.sqlite3", create=TRUE)
+#specify the leagues/files of interest
 all.leagues <- c("nba", "wnba", "d")
 files <- c("boxscore.xml", "pbp_all.xml", "shotchart_all.xml")
+#Now 'rebound' data off the web and store in your local database!
+rebound(first="20130526", last="20130601",
+        leagues = all.leagues, suffix = files, connect=db$con)
+
+
+Alternatively, one can 'rebound' data off the web and leave it in working memory
 dat <- rebound(first="20130526", last="20130601",
-               leagues = all.leagues, suffix = files, connect=my$con)
+               leagues = all.leagues, suffix = files)
+
 }
 }
 \seealso{
