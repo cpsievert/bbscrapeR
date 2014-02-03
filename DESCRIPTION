@@ -10,8 +10,10 @@ Depends:
 Imports:
     XML,
     XML2R (>= 0.0.4),
+    jsonlite,
     stringr,
-    dplyr
+    dplyr,
+    plyr
 Suggests:
     DBI,
     RSQLite,

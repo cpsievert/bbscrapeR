@@ -1,0 +1,11 @@
+\docType{data}
+\name{actions}
+\alias{actions}
+\title{Mapping between 'action_type' and 'action'}
+\description{
+Mapping between 'action_type' and 'action'
+}
+\author{
+Carson Sievert
+}
+

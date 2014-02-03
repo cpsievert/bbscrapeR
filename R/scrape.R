@@ -19,6 +19,8 @@
 #' @import XML
 #' @import XML2R
 #' @import dplyr
+#' @importFrom stringr str_extract
+#' @importFrom plyr try_default
 #' @export
 #' @examples
 #' 
