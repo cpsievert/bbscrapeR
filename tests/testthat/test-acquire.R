@@ -1,0 +1,16 @@
+context("acquire")
+
+test_that("Data types", {
+   shots <- acquire()
+   expect_that(dim(shots)[1] > 1)
+   rebounds <- acquire("rebound")
+   expect_that(dim(rebounds)[1] > 1)
+   pass_dash <- acquire("pass")
+   expect_that(dim(pass_dash)[1] > 1)
+   defense_dash <- acquire("shotdefend")
+   expect_that(dim(defense_dash)[1] > 1)
+   reb_dash <- acquire("reb")
+   expect_that(dim(reb_dash)[1] > 1)
+   shot_dash <- acquire("shots")
+   expect_that(dim(shot_dash)[1] > 1)
+})
