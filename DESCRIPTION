@@ -1,7 +1,8 @@
 Package: bbscrapeR
 Title: Tools for collecting basketball data from nba.com and wnba.com
-Version: 0.1
-Author: Carson Sievert <sievert@iastate.edu>
+Version: 0.2
+Authors@R: c(person("Max", "Marchi", role = "ctb"), person("Carson", "Sievert",
+    email = "sievert@iastate.edu", role = c("aut", "cre")))
 Maintainer: Carson Sievert <sievert@iastate.edu>
 Description: Tools for collecting basketball data from nba.com and wnba.com
 License: MIT + file LICENSE
@@ -12,11 +13,10 @@ Imports:
     XML2R (>= 0.0.4),
     jsonlite,
     stringr,
-    dplyr,
     plyr
 Suggests:
     DBI,
-    RSQLite,
-    RSQLite.extfuns
-Date: 2014-01-13
+    dplyr,
+    RSQLite (>= 1.0.0)
+Date: 2014-10-31
 BugReports: http://github.com/cpsievert/bbscrapeR/issues

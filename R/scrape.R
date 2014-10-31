@@ -1,50 +1,27 @@
 #' 'Rebound' data from nba.com and wnba.com
 #'
-#'  Obtain (and possibly store in a remote database) data from nba.com and wnba.com. Currently there are support for three
-#'  file types. Here are some examples:
-#'  \href{http://www.nba.com/games/game_component/dynamic/20130526/MIAIND/shotchart_all.xml}{shotchart_all.xml}
-#'  \href{http://www.nba.com/games/game_component/dynamic/20130528/MIAIND/pbp_all.xml}{pbp_all.xml}
-#'  \href{http://www.nba.com/games/game_component/dynamic/20130526/MIAIND/boxscore.xml}{boxscore.xml}
 #'
 #' @param first String specifying the date "YYYYMMDD" to start obtaining game codes.
 #' @param last String specifying the date "YYYYMMDD" to stop obtaining game codes.
 #' @param codes Character vector of game codes with league ID as a prefix
 #' @param leagues Character vector with any combination of 'nba', 'wnba', and/or 'd' (for D-League).
 #' @param suffix character vector with suffix of the XML files to be parsed. Currently supported options are: 'boxscore.xml', 'pbp_all.xml', 'shotchart_all.xml'
-#' @param connect A database connection object. The class of the object should be "MySQLConnection" or "SQLiteConnection".
-#' If a valid connection is supplied, tables will be copied to the database, which will result in better memory management.
-#' If a connection is supplied, but the connection fails for some reason, csv files will be written to the working directory.
-#' @seealso If you want to add support for more file types, the \code{XML2R} package is a good place to start.
-#' @return Returns a list of data frames (or nothing if writing to a database).
 #' @import XML
 #' @import XML2R
-#' @import dplyr
-#' @importFrom stringr str_extract
-#' @importFrom plyr try_default
 #' @export
 #' @examples
 #' 
 #' \dontrun{
-#' #If collecting data in bulk, one should create a database connection first.
-#' library(dplyr)
-#' db <- src_sqlite("bball.sqlite3", create=TRUE)
-#' #specify the leagues/files of interest
+#' #all available data between May 26th and June 1st of 2013
 #' all.leagues <- c("nba", "wnba", "d")
 #' files <- c("boxscore.xml", "pbp_all.xml", "shotchart_all.xml")
-#' #Now 'rebound' data off the web and store in your local database!
-#' rebound(first="20130526", last="20130601",
-#'         leagues = all.leagues, suffix = files, connect=db$con)
-#'                
-#'                
-#' Alternatively, one can 'rebound' data off the web and leave it in working memory
 #' dat <- rebound(first="20130526", last="20130601",
 #'                leagues = all.leagues, suffix = files)
-#' 
 #'}
 
 
 
-rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.xml", connect) {
+rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.xml") {
   #translate leagues to '00' for 'nba', '10' for 'wnba', and '20' for 'd'
   tmp <- sub("wnba", "10", leagues)
   tmp <- sub("nba", "00", tmp)
@@ -86,17 +63,8 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     files <- paste0(prefixs, "/shotchart_all.xml")
     obs <- XML2Obs(files, as.equiv=TRUE)
     #as with "pbp_all.xml" files, there is no need to add_key since 'message' & 'message//game' observations occur once per file
-    tables <- setNames(collapse_obs(obs), paste0("shotchart_", c("message", "game", "event")))
-    #turn matrices into dfs and format variable types
-    for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
-    if (!missing(connect)) {
-      #Try to write tables to database, if that fails, write to csv. Then clear up memory
-      for (i in names(tables)) export(connect, name=i, value=tables[[i]])
-      rm(obs)
-      rm(tables)
-      message("Collecting garbage")
-      gc() 
-    }
+    tables <- setNames(collapse_obs(obs), paste0("shotchart//", c("message", "game", "event")))
+    tables[["shotchart//event"]] <- format.shotchart.event(tables[["shotchart//event"]])
   }
   
   if (any(grepl("boxscore.xml", suffix))) {
@@ -108,22 +76,8 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
                    rename.as = "teams", diff.name="home_away", quiet=TRUE)
     obs <- re_name(obs, equiv = c("message//game//htm//pl", "message//game//vtm//pl"),
                     rename.as = "players", diff.name="home_away", quiet=TRUE)
-    table.names <- paste0("boxscore_", c("message", "game", "officials", "players", "teams"))
-    if (exists("tables")){
-      tables <- c(tables, setNames(collapse_obs(obs), table.names))
-    } else {
-      tables <- setNames(collapse_obs(obs), table.names)
-    }
-    #turn matrices into dfs and format variable types
-    for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
-    if (!missing(connect)) {
-      #Try to write tables to database, if that fails, write to csv. Then clear up memory
-      for (i in names(tables)) export(connect, name=i, value=tables[[i]])
-      rm(obs)
-      rm(tables)
-      message("Collecting garbage")
-      gc() 
-    }
+    table.names <- paste0("boxscore//", c("message", "game", "teams", "officials", "players"))
+    tables <- c(tables, setNames(collapse_obs(obs), table.names))
   }
 
   if (any(grepl("pbp_all.xml", suffix))) {
@@ -145,96 +99,14 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     #message node is missing from names in nba obs...sigh
     #Also, note that there is only one message and one message//game observation per file (url can serve as key)
     nms <- names(obs) 
-    nms[nms %in% "game//event"] <- "pbp_event"
-    nms[nms %in% "game"] <- "pbp_game"
-    nms[nms %in% "attrs"] <- "pbp_message"
+    nms[nms %in% "game//event"] <- "message//game//event"
+    nms[nms %in% "game"] <- "message//game"
+    nms[nms %in% "attrs"] <- "message"
     obs <- setNames(obs, nms)
-    if (exists("tables")){
-      tables <- c(tables, collapse_obs(obs))
-    } else {
-      tables <- collapse_obs(obs)
-    }
-    #transform descriptions in the XML value into nicely formatted variables
-    desc <- tables[["pbp_event"]][,"XML_value"]
-    #strip game clock (this is recorded in game_clock anyway)
-    desc <- sub("^\\([0-9]{2}:[0-9]{2}\\)", "", desc)
-    #some game clocks go to the tenth (or maybe hundreth?) of a second
-    desc <- sub("^\\([0-9]{2}:[0-9]{2}\\.[0-9]+\\)", "", desc)
-    #team abbreviation isn't useful either
-    desc <- sub("^\\[[A-Z]{3}.*\\]", "", desc)
-    #trim
-    desc <- sub("^ ", "", desc)
-    player_code <- tables[["pbp_event"]][,"player_code"]
-    #If player_code is populated and the description is not a jump ball, 
-    #then the first word in the description is useless!
-    idx <- player_code != "" & !grepl("Jump Ball", desc)
-    desc[idx] <- sub("/^[a-z ,.'-]+$/i", "", desc[idx])
-    #Now split the description into two parts if more than one player is involved
-    expr <- "Assist|Steal|Block"
-    indicies <- grep(expr, desc)
-    mat <- sapply(strsplit(desc[indicies], expr), "[")
-    desc[indicies] <- sub(" $", "", mat[1,])
-    new <- rep("", length(desc))
-    new[indicies] <- sub("^: |^:", "", mat[2,])
-    #split 'secondary events' further into 'who done it' and 'what was it'
-    event2 <- sub("\\)", "", sub("[0-9]+", "", sub(".*\\(", "", new)))
-    player2 <- sub("\\(.*\\)", "", new)
-    #extract the number of (cumulative) points  
-    pts <- str_extract(desc, "\\([[:digit:]]+ PTS\\)")
-    pts <- str_extract(pts, "([[:digit:]]+)")
-    #add an 'event_tag'
-    tag <- rep("", length(desc))
-    indicies <- grep("\\(", desc)
-    tag[indicies] <- sub("\\)", "", sub(".*\\(", "", desc[indicies]))
-    #get rid of tag from description
-    desc <- sub(" $", "", sub("\\([0-9]+ [A-Z]+\\)$", "", desc))
-    #grab second tag (are these just personal foul trackers?)
-    tag2 <- rep("", length(desc))
-    indicies <- grep("\\([0-9]+ [A-Z]+\\)", desc)
-    tag2[indicies] <- sub("\\)", "", sub(".*\\(", "", desc[indicies]))
-    event_tag <- paste(tag2, tag)
-    #get rid of (second) tag from description
-    desc <- sub(" $", "", sub("\\([0-9]+ [A-Z]+\\)$", "", desc))
-    #grab rebounds
-    indicies <- grep("\\(Off:[0-9]+ Def:[0-9]+\\)", desc)
-    rebounds <- sub("\\)", "", sub(".*\\(", "", desc[indicies]))
-    mat <- sapply(strsplit(rebounds, "[D-d]ef"), "[")
-    rebound_off <- sub("^ ", "", sub(" $", "", sub(":", "", sub("[O-o]ff", "", mat[2,]))))
-    rebound_def <- sub("^ ", "", sub(" $", "", sub(":", "", mat[2,])))
-    #remove rebounds from description
-    desc <- sub(" $", "", sub("\\(Off:[0-9]+ Def:[0-9]+\\)", "", desc))
-    desc <- sub(":$", "", desc)
-    indicies <- grep(":", desc)
-    mat <- sapply(strsplit(desc[indicies], ":"), "[")
-    desc[indicies] <- sub(" $", "", mat[1,])
-    event_res <- rep("", length(desc))
-    event_res[indicies] <- sub("^ ", "", mat[2,])
-    tables[["pbp_event"]] <- cbind(tables[["pbp_event"]], 
-                                    cbind(event_desc=desc, event_res, event_tag, event2, player2, cum_points=pts,
-                                          three_point=as.numeric(grepl("3pt", desc))))
-    #turn matrices into dfs and format variable types
-    for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
-    #turn the numbered action_type and msg_type variables into more informative response values
-    scrape.env <- environment() #avoids bringing data objects into global environment
-    data(actions, package="bbscrapeR", envir=scrape.env)
-    data(msgs, package="bbscrapeR", envir=scrape.env)
-    tables[["pbp_event"]] <- left_join(x=tables[["pbp_event"]], y=actions, by=c("action_type", "msg_type"))
-    tables[["pbp_event"]] <- left_join(x=tables[["pbp_event"]], y=msgs, by="action_type")
-    if (!missing(connect)) {
-      #Try to write tables to database, if that fails, write to csv. Then clear up memory
-      for (i in names(tables)) export(connect, name=i, value=tables[[i]])
-      rm(obs)
-      rm(tables)
-      message("Collecting garbage")
-      gc() 
-    }
+    table.names <- paste0("pbp//", c("message", "game", "event"))
+    tables <- c(tables, setNames(collapse_obs(obs), table.names))
   }
-  if (exists("tables")) {
-    return(tables)
-  } else {
-    #Should I return the connection or something else instead?
-    return(NULL)
-  }
+  return(tables)
 }
 
 
@@ -301,78 +173,15 @@ pbpToDocs <- function(urls, quiet=FALSE){
   return(docs)
 }
 
-#Try to write tables to database connection, if that fails, write to csv.
-export <- function(connect, name, value) {
-  # '.' in table names are not good!
-  names(value) <- sub("\\.", "_", names(value))
-  #if url.map=FALSE, have to change 'url_key' to url
-  names(value) <- sub("^url_key$", "url", names(value))
-  current.fields <- names(value)
-  #url should never be NA!
-  throw <- is.na(value$url)
-  if (any(throw)) value <- value[-throw,]
-  if (dim(value)[1] == 0) return(NULL)
-  #upload fields so we have table templates
-  env2 <- environment()
-  data(fields, package="bbscrapeR", envir=env2)
-  #Try to find fields in an existing table
-  prior.fields <- plyr::try_default(DBI::dbListFields(connect, name), default=NULL, quiet=TRUE)
-  master.fields <- names(fields[[name]])
-  if (!is.null(prior.fields)) {
-    idx <- !master.fields %in% prior.fields
-    if (any(idx)) warning(paste("The", name, "table in your database has fewer fields than the suggested set of fields! You might want to try adding these fields to this table:", paste(master.fields[idx], collaspe=", ")))
-    new.fields <- prior.fields[!prior.fields %in% current.fields]
-    types <- NULL
-  } else {
-    new.fields <- master.fields[!master.fields %in% current.fields]
-    types <- fields[[name]]
-  }
-  #add any missing fields to value b4 trying to write to database
-  if (length(new.fields) > 0) {
-    new.mat <- matrix(rep(NA, length(new.fields)), nrow=1)
-    value <- cbind(value, `colnames<-`(new.mat, new.fields))
-    #must have columns ordered same way
-    value <- value[master.fields]
-  }
-  success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, field.types=types,
-                                                 append=TRUE, overwrite=FALSE, row.names=FALSE),
-                               default=FALSE, quiet=TRUE)
-  if (success) {
-    message(paste("Successfully copied", name, "table to database connection."))
-  } else {
-    file.name <- gsub(" ", "-", gsub(":", "-", paste0(name, " ", Sys.time(), ".csv")))
-    message(paste("Failed to copy", name, "table to database connection. Writing", file.name, "instead."))
-    write.csv(value, file=file.name, row.names=FALSE)
-  }
-  return(success)
-}
 
-
-
-
-# Take a matrix and turn into data frame and turn relevant columns into numerics (or integers)
-format.table <- function(dat, name) {
-  nums <- NULL
-  ints <- NULL
-  switch(name,
-         shotchart_event = ints <- c("act", "id", "prd", "pts", "x", "y", "time"),
-         pbp_event = ints <- c("action_type", "msg_type", "eventid", "prd", "htms", "vtms", "cum_points", "three_point")
-  )
+# Series of formatting functions to coerce variables to their proper (numeric) types
+format.table <- function(dat, nums) {
   dat <- data.frame(dat, stringsAsFactors=FALSE)
   numz <- nums[nums %in% names(dat)] #error handling (just in case one of the columns doesn't exist)
-  intz <- ints[ints %in% names(dat)] #error handling (just in case one of the columns doesn't exist)
   for (i in numz) dat[, i] <- as.numeric(dat[, i])
-  for (i in intz) dat[, i] <- as.integer(dat[, i])
-  if (name == "shotchart_event") { #change some of the column names so they match columns in pbp_event
-    names(dat) <- gsub("^id$", "eventid", names(dat))
-    names(dat) <- gsub("^act$", "action_type", names(dat))
-  }
   return(dat)
 }
-
-#silly function to work around stringsAsFactors=TRUE when using merge
-merged <- function(x, y, by){
-  dat <- merge(x=x, y=y, by=by, sort=FALSE)
-  dat[] <- lapply(dat, function(x) as.character(x))
-  return(dat)
+format.shotchart.event <- function(dat) {
+  event.nums <- c("x", "y")
+  format.table(dat, nums=event.nums)
 }

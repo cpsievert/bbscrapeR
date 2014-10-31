@@ -1,0 +1,3 @@
+How to connect shotchart data with player tracking?
+Better error messages (use httr to inspect/handle HTTP codes)
+Provide a wrapper to acquire that handles Season parameter in a convenient way (based on DateFrom and DateTo)?
