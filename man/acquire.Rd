@@ -66,5 +66,10 @@ pass_dash <- acquire("pass")
 defense_dash <- acquire("shotdefend")
 reb_dash <- acquire("reb")
 shot_dash <- acquire("shots")
+
+# Collect data for all the players!
+ids <- players[, 'PlayerID']
+ldats <- lapply(ids, function(x) acquire(PlayerID = x))
+dat <- do.call("rbind", ldats)
 }
 

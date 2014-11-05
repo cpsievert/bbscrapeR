@@ -40,6 +40,12 @@
 #' reb_dash <- acquire("reb")
 #' shot_dash <- acquire("shots")
 #' 
+#' # Collect data for all the players!
+#' ids <- players[, 'PlayerID']
+#' ldats <- lapply(ids, function(x) acquire(PlayerID = x))
+#' dat <- do.call("rbind", ldats)
+#' 
+#' 
 
 # NOTE TO SELF:
 # I determined these 'response parameters' from navigating to 
@@ -68,8 +74,15 @@ acquire <- function(type = "shot", PlayerID = "2544", DateFrom = "", DateTo = ""
          "&PerMode=", PerMode)
   json <- fromJSON(st)
   # add headers to (possibly a list) of tables
-  tab <- with(json$resultSets,
-                mapply(`colnames<-`, rowSet, headers, SIMPLIFY = FALSE))
+  # note that a row of missing values is returned
+  # if no data is returned
+  tab <- mapply(function(x, y) { 
+            if (!length(x)) 
+              x <- matrix(rep(NA, length(y)), nrow = 1)
+            `colnames<-`(x, y)
+          }, 
+    json$resultSets$rowSet, json$resultSets$headers, 
+    SIMPLIFY = FALSE)
   # append a new column with the 'name' of the table
   tab <- mapply(function(x, y) cbind(x, TABLE_NAME = y), 
                  tab, as.list(json$resultSets$name), SIMPLIFY = FALSE)
