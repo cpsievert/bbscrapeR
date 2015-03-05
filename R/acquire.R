@@ -78,7 +78,7 @@ acquire <- function(type = "shot", PlayerID = "2544", DateFrom = "", DateTo = ""
          "&SeasonSegment=", SeasonSegment, "&SeasonType=", SeasonType, "&TeamID=",
          TeamID, "&VsConference=", VsConference, "&VsDivision=", VsDivision,
          "&PerMode=", PerMode)
-  json <- fromJSON(st)
+  json <- jsonlite::fromJSON(st)
   # add headers to (possibly a list) of tables
   # note that a row of missing values is returned
   # if no data is returned

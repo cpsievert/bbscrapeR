@@ -12,7 +12,6 @@ Imports:
     XML,
     XML2R (>= 0.0.4),
     jsonlite,
-    stringr,
     plyr
 Suggests:
     DBI,
