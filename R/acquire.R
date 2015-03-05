@@ -27,6 +27,7 @@
 #' @export
 #' @examples
 #' 
+#' \dontrun{
 #' # Defaults to Lebron's shots from the 2013-14 regular season
 #' shots <- acquire()
 #' # Lebron's rebounds from the 2013-14 regular season
@@ -40,11 +41,16 @@
 #' reb_dash <- acquire("reb")
 #' shot_dash <- acquire("shots")
 #' 
-#' # Collect data for all the players!
+#' # All the shots for the 2013-14 season!
 #' ids <- players[, 'PlayerID']
-#' ldats <- lapply(ids, function(x) acquire(PlayerID = x))
-#' dat <- do.call("rbind", ldats)
+#' lshots <- lapply(ids, function(x) acquire(PlayerID = x))
+#' allshots <- do.call("rbind", lshots)
 #' 
+#' # All the rebounds for the 2013-14 season!
+#' lrebounds <- lapply(ids, function(x) 
+#'                  acquire(type = "rebound", PlayerID = x))
+#' allrebs <- do.call("rbind", lrebounds)
+#' }
 #' 
 
 # NOTE TO SELF:

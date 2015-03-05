@@ -17,6 +17,7 @@ Imports:
 Suggests:
     DBI,
     dplyr,
-    RSQLite (>= 1.0.0)
+    RSQLite (>= 1.0.0),
+    testthat
 Date: 2014-10-31
 BugReports: http://github.com/cpsievert/bbscrapeR/issues
