@@ -12,3 +12,8 @@ You can install this package with [devtools](http://cran.r-project.org/web/packa
 devtools::install_github('cpsievert/bbscrapeR')
 ```
 
+## Vignettes
+
+Here I will keep a set of links that demonstrate how to use the package:
+
+1. Rebounding data -- <http://cpsievert.github.io/bbscrapeR/rebound/>
