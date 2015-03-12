@@ -5,10 +5,12 @@ knit_examples <- function() {
   dirs <- dir()
   # keep only directories
   dirs <- dirs[file_test("-d", dirs)]
-  # navigate intp each example and knit individually
+  # navigate into each example and knit individually
   for (i in dirs) {
     setwd(i)
-    e <- try(knitr::knit2html(input = paste0(i, ".Rmd"), envir = new.env()))
+    for (j in Sys.glob("*.Rmd")) {
+      e <- try(knitr::knit2html(input = paste0(j, ".Rmd"), envir = new.env()))
+    }
     setwd(old)
   }
 }
