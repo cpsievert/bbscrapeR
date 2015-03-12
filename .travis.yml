@@ -1,12 +1,12 @@
 language: r
-
 before_script:
-  - chmod 755 ./.push_gh_pages.sh
-  
+- chmod 755 ./.push_gh_pages.sh
 script:
-  - ./.push_gh_pages.sh
-
+- "./.push_gh_pages.sh"
 notifications:
   email:
     on_success: change
     on_failure: change
+env:
+  global:
+  - secure: KATyUL1QlYryaeAWCwBEY4Bh0hcHNWb+8ydG1r1j0Vs/qoDips0Q9WCipOT3iEuBKgW3zSb+AGPh503rJf1jJzew+9hyiKJAZqyPmgycy251Wc1lKPOlEEjSPZ4ArNLCc/x1lGTWEf+SiM1XZeKnAlAWtLU85iXX1FJSBsdjLLI=
