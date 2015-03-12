@@ -9,7 +9,7 @@ knit_examples <- function() {
   for (i in dirs) {
     setwd(i)
     for (j in Sys.glob("*.Rmd")) {
-      e <- try(knitr::knit2html(input = j, envir = new.env()))
+      e <- try(rmarkdown::render(input = j, envir = new.env()))
     }
     setwd(old)
   }

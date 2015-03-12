@@ -7,7 +7,11 @@ output: html_document
 
 The `rebound()` function can be used to obtain shotchart and play-by-play data for a certain period of time. For example, let's grab shotchart and play-by-play data from the first seven days of November, 2013:
 
-```{r}
+```{r echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r, results='hide'}
 library(bbscrapeR)
 dat <- rebound("20131101", "20131107",
                suffix = c("pbp_all.xml", "shotchart_all.xml"))
