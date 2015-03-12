@@ -1,6 +1,6 @@
 Package: bbscrapeR
 Title: Tools for collecting basketball data from nba.com and wnba.com
-Version: 0.2
+Version: 0.3
 Authors@R: c(person("Max", "Marchi", role = "ctb"), person("Carson", "Sievert",
     email = "sievert@iastate.edu", role = c("aut", "cre")))
 Maintainer: Carson Sievert <sievert@iastate.edu>
@@ -12,6 +12,7 @@ Imports:
     XML,
     XML2R (>= 0.0.4),
     jsonlite,
+    stringr,
     plyr
 Suggests:
     DBI,

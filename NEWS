@@ -1,3 +1,15 @@
+    bbscrapeR VERSION 0.0.3
+    
+MAJOR CHANGES
+  - Much different (and better) formatting of tables returned by rebound().
+  - rebound() will now consistently return a list of data frames.
+
+    bbscrapeR VERSION 0.0.2
+    
+NEW FEATURES
+
+  - Added the acquire() function to obtain player tracking data.
+
     bbscrapeR VERSION 0.0.1
 
 NEW FEATURES

@@ -1,1 +1,146 @@
-action_type,msg_type,message1,1,Jump1,3,Hook1,4,Tip1,40,Layup1,41,Running Layup1,42,Driving Layup1,43,Alley Oop Layup1,44,Reverse Layup1,46,Running Jump1,47,Turnaround Jump1,49,Driving Dunk1,5,Layup1,50,Running Dunk1,51,Reverse Dunk1,52,Alley Oop Dunk1,53,Tip1,56,Running Hook1,57,Driving Hook1,58,Turnaround Hook1,63,Fadeaway Jump1,65,Jump Hook1,66,Jump Bank1,67,Hook Bank1,7,Dunk1,71,Finger Roll Layup1,72,Putback Layup1,73,Driving Reverse Layup1,75,Driving Finger Roll Layup1,76,Running Finger Roll Layup1,77,Driving Jump1,78,Floating Jump1,79,Pullup Jump1,8,Slam Dunk1,80,Step Back Jump1,82,Driving Bank1,84,Running Bank1,85,Turnaround Bank1,86,Turnaround Fadeaway1,87,Putback Dunk1,88,Driving Slam Dunk1,89,Reverse Slam Dunk1,90,Running Slam Dunk1,92,Putback Slam Dunk1,93,Driving Bank Hook1,96,Turnaround Bank Hook2,1,Jump2,3,Hook2,4,Tip2,40,Layup2,41,Running Layup2,42,Driving Layup2,43,Alley Oop Layup2,44,Reverse Layup2,46,Running Jump2,47,Turnaround Jump2,49,Driving Dunk2,5,Layup2,50,Running Dunk2,51,Reverse Dunk2,52,Alley Oop Dunk2,53,Tip2,56,Running Hook2,57,Driving Hook2,58,Turnaround Hook2,63,Fadeaway Jump2,65,Jump Hook2,66,Jump Bank2,67,Hook Bank2,7,Dunk2,71,Finger Roll Layup2,72,Putback Layup2,73,Driving Reverse Layup2,75,Driving Finger Roll Layup2,76,Running Finger Roll Layup2,77,Driving Jump2,78,Floating Jump2,79,Pullup Jump2,8,Slam Dunk2,80,Step Back Jump2,81,3pt2,82,Driving Bank2,84,Running Bank2,85,Turnaround Bank2,86,Turnaround Fadeaway2,87,Putback Dunk2,88,Driving Slam Dunk2,89,Reverse Slam Dunk2,90,Running Slam Dunk2,92,Putback Slam Dunk2,93,Driving Bank Hook2,96,Turnaround Bank Hook3,10,1 of 13,11,1 of 23,12,2 of 23,13,1 of 33,14,2 of 33,15,3 of 33,16,Technical4,0,Individual4,1,Team5,1,Bad Pass5,2,Lost Ball5,4,Travelling5,5,Foul5,6,Double Dribble5,7,Discontinue Dribble5,8,3 Second Violation5,11,Shot Clock Turnover5,13,Backcourt Turnover5,15,Offensive Goaltending6,1,Personal6,3,Loose Ball6,4,Offensive6,6,Away From Play6,11,Technical6,16,Double Technical6,17,Defense 3 Second7,1,Delay Of Game7,2,Defensive Goaltending7,3,Lane7,5,Kicked Ball8,0,---9,1,Regular9,2,Short9,4,Official10,0,---11,1,---12,0,---13,0,---
+msg_type,action_type,primary_event
+10,0,Jump Ball
+12,0,Start Period
+1,1,Jump Shot
+1,3,Hook
+1,4,Tip
+1,40,Layup
+1,41,Running Layup
+1,42,Driving Layup
+1,43,Alley Oop Layup
+1,44,Reverse Layup
+1,46,Running Jump
+1,47,Turnaround Jump
+1,49,Driving Dunk
+1,5,Layup
+1,50,Running Dunk
+1,51,Reverse Dunk
+1,52,Alley Oop Dunk
+1,53,Tip
+1,56,Running Hook
+1,57,Driving Hook
+1,58,Turnaround Hook
+1,63,Fadeaway Jump
+1,65,Jump Hook
+1,66,Jump Bank
+1,67,Hook Bank
+1,7,Dunk
+1,71,Finger Roll Layup
+1,72,Putback Layup
+1,73,Driving Reverse Layup
+1,74,Running Reverse Layup Shot
+1,75,Driving Finger Roll Layup
+1,76,Running Finger Roll Layup
+1,77,Driving Jump
+1,78,Floating Jump
+1,79,Pullup Jump
+1,8,Slam Dunk
+1,80,Step Back Jump
+1,82,Driving Bank
+1,84,Running Bank
+1,85,Turnaround Bank
+1,86,Turnaround Fadeaway
+1,87,Putback Dunk
+1,88,Driving Slam Dunk
+1,89,Reverse Slam Dunk
+1,90,Running Slam Dunk
+1,92,Putback Slam Dunk
+1,93,Driving Bank Hook
+1,94,Jump Bank Hook Shot
+1,96,Turnaround Bank Hook
+2,1,Jump
+2,3,Hook
+2,4,Tip
+2,40,Layup
+2,41,Running Layup
+2,42,Driving Layup
+2,43,Alley Oop Layup
+2,44,Reverse Layup
+2,46,Running Jump
+2,47,Turnaround Jump
+2,49,Driving Dunk
+2,5,Layup
+2,50,Running Dunk
+2,51,Reverse Dunk
+2,52,Alley Oop Dunk
+2,53,Tip
+2,56,Running Hook
+2,57,Driving Hook
+2,58,Turnaround Hook
+2,63,Fadeaway Jump
+2,65,Jump Hook
+2,66,Jump Bank
+2,67,Hook Bank
+2,7,Dunk
+2,71,Finger Roll Layup
+2,72,Putback Layup
+2,73,Driving Reverse Layup
+2,75,Driving Finger Roll Layup
+2,76,Running Finger Roll Layup
+2,77,Driving Jump
+2,78,Floating Jump
+2,79,Pullup Jump
+2,8,Slam Dunk
+2,80,Step Back Jump
+2,81,3pt
+2,82,Driving Bank
+2,84,Running Bank
+2,85,Turnaround Bank
+2,86,Turnaround Fadeaway
+2,87,Putback Dunk
+2,88,Driving Slam Dunk
+2,89,Reverse Slam Dunk
+2,90,Running Slam Dunk
+2,92,Putback Slam Dunk
+2,93,Driving Bank Hook
+2,96,Turnaround Bank Hook
+3,10,1 of 1
+3,11,1 of 2
+3,12,2 of 2
+3,13,1 of 3
+3,14,2 of 3
+3,15,3 of 3
+3,16,Technical
+3,18,Free Throw Flagrant 1 of 2
+3,19,Free Throw Flagrant 2 of 2
+4,0,Individual
+4,1,Team
+5,1,Bad Pass
+5,2,Lost Ball
+5,4,Travelling
+5,5,Foul
+5,6,Double Dribble
+5,7,Discontinue Dribble
+5,8,3 Second Violation
+5,11,Shot Clock Turnover
+5,13,Backcourt Turnover
+5,15,Offensive Goaltending
+5,36,Illegal Screen Turnover
+5,38,Team 5 Sec Inbound Turnover
+5,39,Step Out of Bounds Turnover
+5,40,Out of Bounds Lost Ball Turnover
+6,1,Personal
+6,2,Shooting Foul
+6,3,Loose Ball
+6,4,Offensive
+6,6,Away From Play
+6,10,Double Personal
+6,11,Technical
+6,14,Flagrant Type 1
+6,16,Double Technical
+6,17,Defense 3 Second
+6,19,Taunting Technical
+6,26,Offensive Charge
+6,27,Personal Block
+6,28,Personal Take
+6,29,Shooting Block
+7,1,Delay Of Game
+7,2,Defensive Goaltending
+7,3,Lane
+7,5,Kicked Ball
+8,0,---
+9,1,Regular
+9,2,Short
+9,4,Official
+11,1,---
+13,0,---

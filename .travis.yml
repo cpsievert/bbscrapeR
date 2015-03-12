@@ -1,9 +1,10 @@
-# Sample .travis.yml for R projects from https://github.com/craigcitro/r-travis
-
 language: r
 
-r_packages:
-  - httr
+before_script:
+  - chmod 755 ./.push_gh_pages.sh
+  
+script:
+  - ./.push_gh_pages.sh
 
 notifications:
   email:
