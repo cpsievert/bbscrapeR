@@ -18,6 +18,7 @@ Suggests:
     DBI,
     dplyr,
     RSQLite (>= 1.0.0),
-    testthat
+    testthat,
+    knitr
 Date: 2014-10-31
 BugReports: http://github.com/cpsievert/bbscrapeR/issues
