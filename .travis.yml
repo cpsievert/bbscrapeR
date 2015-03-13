@@ -2,8 +2,9 @@ language: r
 # needed for examples
 r_packages:
   - knitr
-  - ggplot2
   - rmarkdown
+  - ggplot2
+  - hexbin
 before_script:
 - chmod 755 ./.push_gh_pages.sh
 script:

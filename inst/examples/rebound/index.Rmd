@@ -34,7 +34,7 @@ events <- plyr::join(dat[["shotchart//event"]], pbp_events,
 
 At this point, it is fairly easy to plot the frequency of shot attempts. Note that the only valid actions for the shotchart data is a "made shot" or a "missed shot".
 
-```{r}
+```{r fig.width = 8, fig.align = 'center'}
 library(ggplot2)
 ggplot(data = events, aes(x = x, y = y)) + 
   geom_hex() + facet_wrap(~action)
