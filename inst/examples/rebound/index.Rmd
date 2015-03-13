@@ -36,6 +36,6 @@ At this point, it is fairly easy to plot the frequency of shot attempts. Note th
 
 ```{r}
 library(ggplot2)
-p <- ggplot(data = events, aes(x = x, y = y)) + 
+ggplot(data = events, aes(x = x, y = y)) + 
   geom_hex() + facet_wrap(~action)
 ```

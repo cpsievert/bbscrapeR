@@ -18,7 +18,7 @@ git config user.email "cpsievert1@gmail.com"
 # compile demo html pages and commit
 R -e "devtools::install('../bbscrapeR'); source('knit_examples.R')"
 git add .
-git commit -m "deployed to github pages"
+git commit -m "Travis build ${TRAVIS_BUILD_NUMBER} and SHA1 ${TRAVIS_COMMIT}"
 
 
 GH_REPO="@github.com/cpsievert/bbscrapeR.git"
