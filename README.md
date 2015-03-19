@@ -3,7 +3,7 @@ bbscrapeR
 
 [![Build Status](https://travis-ci.org/cpsievert/bbscrapeR.png)](https://travis-ci.org/cpsievert/bbscrapeR)
 
-R package for collecting data from NBA play-by-play, shot location, and some Sport VU data.
+R package for collecting NBA play-by-play, shot location, and some Sport VU data.
 
 You can install this package with [devtools](http://cran.r-project.org/web/packages/devtools/)
 
