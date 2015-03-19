@@ -1,16 +1,22 @@
-    bbscrapeR VERSION 0.0.3
+    bbscrapeR VERSION 0.4
+    
+MAJOR CHANGES
+  - rebound() now supports every NBA game going back to 2000.
+  - rvest added to IMPORTS
+
+    bbscrapeR VERSION 0.3
     
 MAJOR CHANGES
   - Much different (and better) formatting of tables returned by rebound().
   - rebound() will now consistently return a list of data frames.
 
-    bbscrapeR VERSION 0.0.2
+    bbscrapeR VERSION 0.2
     
 NEW FEATURES
 
   - Added the acquire() function to obtain player tracking data.
 
-    bbscrapeR VERSION 0.0.1
+    bbscrapeR VERSION 0.1
 
 NEW FEATURES
 

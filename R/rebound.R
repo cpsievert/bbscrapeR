@@ -7,15 +7,15 @@
 #' @param suffix character vector with suffix of the XML files to be parsed. Currently supported options are: 'boxscore.xml', 'pbp_all.xml', 'shotchart_all.xml'
 #' @import XML
 #' @import XML2R
+#' @import plyr
+#' @import jsonlite
 #' @export
 #' @examples
 #' 
 #' \dontrun{
 #' #all available data between May 26th and June 1st of 2013
-#' all.leagues <- c("nba", "wnba", "d")
 #' files <- c("boxscore.xml", "pbp_all.xml", "shotchart_all.xml")
-#' dat <- rebound(first="20130526", last="20130601",
-#'                leagues = all.leagues, suffix = files)
+#' dat <- rebound(first = "20130526", last = "20130601", suffix = files)
 #'}
 
 rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.xml") {
@@ -35,6 +35,12 @@ rebound <- function(first, last, codes, leagues = "nba", suffix="shotchart_all.x
     datez <- as.POSIXct(codez, format = "%Y %m %d")
     firzt <- as.POSIXct(first, format = "%Y %m %d")
     lazt <- as.POSIXct(last, format = "%Y %m %d")
+    # grab new codes if user specifies a more recent date then we have stored
+    if (lazt >= max(datez)) {
+      message("Obtaining new game codes.")
+      codez <- unique(codez, get_codes(format(lazt, "%Y")))
+      datez <- as.POSIXct(codez, format = "%Y %m %d")
+    }
     codex <- codez[firzt <= datez & datez <= lazt]
     if (length(codex) == 0) stop("Couldn't find any games during that period")
   } else {
@@ -239,4 +245,26 @@ format_pbp_event <- function(dat) {
   dat <- dat[,!grepl("action_type", names(dat), fixed = TRUE)]
   dat <- dat[,!grepl("msg_type", names(dat), fixed = TRUE)]
   dat
+}
+
+# get game codes for a specific year
+get_codes <- function(yr) {
+  src <- paste0("http://www.basketball-reference.com/leagues/NBA_", 
+                yr, "_games.html") %>% html()
+  games <- plyr::try_default({
+                src %>% html_node("table#games") %>% html_table()
+              }, NULL, quiet = TRUE)
+  playoffs <- plyr::try_default({
+                src %>% html_node("table#games_playoffs") %>% html_table()
+              }, NULL, quiet = TRUE)
+  games <- rbind(games, playoffs)
+  dict <- src %>% html_nodes("td~ td+ td a")
+  abbrev <- dict %>% html_attr("href") %>% stringr::str_extract("[A-Z]{3}")
+  full <- dict %>% html_text()
+  names(abbrev) <- full
+  home <- abbrev[as.character(games[, grepl("^Home", names(games))])]
+  away <- abbrev[as.character(games[, grepl("^Visitor", names(games))])]
+  x <- sub("^[a-z]+, ", "", tolower(games$Date))
+  dates <- gsub("-", "", as.character(as.Date(x, format = "%b %d, %Y")))
+  paste(dates, paste0(away, home), sep = "/")
 }
