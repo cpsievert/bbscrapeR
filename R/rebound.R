@@ -217,8 +217,8 @@ format_shotchart_event <- function(dat) {
                player_id = sapply(sp, "[[", 1),
                player_code = sapply(sp, "[[", 2))
   matchup <- stringr::str_extract(dat[, "url"], "[A-Z]{6}")
-  dat <- cbind(dat, home_team = substr(matchup, 0, 3),
-               away_team = substr(matchup, 4, 6))
+  dat <- cbind(dat, home_team = substr(matchup, 4, 6),
+               away_team = substr(matchup, 0, 3))
   dat <- dat[, !grepl("pid", colnames(dat), fixed = TRUE)]
   event.nums <- c("x", "y", "pts", "time", "player_num")
   dat <- format_table(dat, nums=event.nums)
