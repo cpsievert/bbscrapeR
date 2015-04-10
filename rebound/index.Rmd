@@ -1,0 +1,41 @@
+---
+title: "Rebounding data"
+author: "Carson Sievert"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+The `rebound()` function can be used to obtain shotchart and play-by-play data for a certain period of time. For example, let's grab shotchart and play-by-play data from the first seven days of November, 2013:
+
+```{r echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r, results='hide'}
+library(bbscrapeR)
+dat <- rebound("20131101", "20131107",
+               suffix = c("pbp_all.xml", "shotchart_all.xml"))
+```
+
+`rebound()` will always return a list of data frames. Perhaps most interesting among these data frames are those named "shotchart//event" and "pbp//event".
+
+```{r}
+head(dat[["shotchart//event"]])
+head(dat[["pbp//event"]])
+```
+
+These two tables share "gcd" (game identifier) and "eventid" columns that can be used to join these two tables together. In this case, I'd like to see how the shotchart varies across various "action"s, so let's append the action column from the play-by-play table to the shotchart table.
+
+```{r}
+pbp_events <- dat[["pbp//event"]][c("eventid", "gcd", "action")]
+events <- plyr::join(dat[["shotchart//event"]], pbp_events,
+                     by = c("eventid", "gcd"))
+```
+
+At this point, it is fairly easy to plot the frequency of shot attempts. Note that the only valid actions for the shotchart data is a "made shot" or a "missed shot".
+
+```{r fig.width = 8, fig.align = 'center'}
+library(ggplot2)
+ggplot(data = events, aes(x = x, y = y)) + 
+  geom_hex() + facet_wrap(~action)
+```
