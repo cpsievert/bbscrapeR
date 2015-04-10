@@ -1,3 +1,8 @@
+    bbscrapeR VERSION 0.5
+    
+BUG FIX
+  - home_team/away_team fields were reversed.
+
     bbscrapeR VERSION 0.4
     
 MAJOR CHANGES

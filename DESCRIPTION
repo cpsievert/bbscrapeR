@@ -1,6 +1,6 @@
 Package: bbscrapeR
 Title: Tools for collecting basketball data from nba.com and wnba.com
-Version: 0.4
+Version: 0.5
 Authors@R: c(person("Max", "Marchi", role = "ctb"), person("Carson", "Sievert",
     email = "sievert@iastate.edu", role = c("aut", "cre")))
 Maintainer: Carson Sievert <sievert@iastate.edu>
