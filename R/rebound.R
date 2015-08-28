@@ -152,9 +152,8 @@ getCodes <- function(init.date = "05/26/2013", id = "00", offset = paste(0:10)){
       scoreboards <- fromJSON(url)[[3]]
       idx <- which(scoreboards$name %in% "GameHeader")
       idx2 <- which(scoreboards$headers[[idx]] %in% "GAMECODE")
-      sets <- scoreboards$rowSet[idx][[1]]
-      code <- sapply(sets, function(x) x[idx2])
-      if (length(code) > 0)  code <- paste0(i, "/", code)
+      code <- scoreboards$rowSet[[idx]][,idx2]
+      if (length(code) > 0)  code <- paste0(i, code)
       codes <- c(codes, code)
     }
   }
